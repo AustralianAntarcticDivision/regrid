@@ -1,0 +1,60 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# regrid
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of regrid is to provide conversion of irregular grids to regular using a straightforward triangulation-on-mesh approach. 
+
+## Installation
+
+You can install the development version of regrid like so:
+
+``` r
+devtools::install_github("AustralianAntarcticDivision/regrid")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+```{r example}
+library(raster)
+par(mfrow = c(2, 2))
+## this is our target grid, pick regular longlat or whatever you want
+#grid <- raster::raster(raster::extent(-180, 180, -90, 90), ncols = 360, nrows = 180, crs = "OGC:CRS84")
+#d <- pi * 6378137
+#grid <- raster(extent(-1, 1, -1/2, 1/2) * d, nrows = 180, ncols = 360, crs = "+proj=moll")
+#grid <- raster(extent(-1, 1, -1, 1) * 2e7, nrows = 360, ncols = 360, crs = "+proj=omerc +lon_0=-147 +gamma=10 +lonc=180")
+#grid <- raster(extent(-1, 1, -1, 1) * 1.5e7, nrows = 360, ncols = 360, crs = "+proj=laea +lon_0=180")
+
+world <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
+pworld <- sf::st_transform(world, "+proj=robin")
+grid <- raster(pworld, nrows = 360, ncols = 720)
+
+#for (i in list.files(pattern = "rds")) {
+xthing <- readRDS("mike_1.rds")
+
+## coords is longitude,latitude in a 2-layer RasterStack/Brick
+coords <- xthing$cc
+## x is the data, 'tos' for example
+x <- xthing$tos
+#plot(values(coords), pch = ".", col = rgb(0, 0, 0, .4))
+image(regrid(x, coords = coords, grid = grid), asp = 1, col = hcl.colors(256), zlim = c(-2, 36))
+
+
+```
